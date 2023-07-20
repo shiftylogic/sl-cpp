@@ -1,6 +1,6 @@
 # MIT License
 #
-# Copyright (c) 2023-presnt Robert Anderson
+# Copyright (c) 2023-present Robert Anderson
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -20,13 +20,49 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-cmake_minimum_required( VERSION 3.26 )
+project( sl-core )
 
-# Enable C++20 modules
-set( CMAKE_EXPERIMENTAL_CXX_MODULE_CMAKE_API "2182bf5c-ef0d-489a-91da-49dbc3090d2a" )
-set( CMAKE_EXPERIMENTAL_CXX_MODULE_DYNDEP 1 )
+add_library( ${PROJECT_NAME} )
+target_sources( ${PROJECT_NAME} PUBLIC
+    FILE_SET cxx_modules
+    TYPE CXX_MODULES
+    FILES
+        src/io/mod.cpp
+        src/io/cache-hint.cpp
+        src/io/error.cpp
+        src/io/load.cpp
+        src/io/unix/mapped-file.cpp     # TODO: Pick the 'win' files on Windows
+        src/io/unix/mapped-view.cpp
+
+        src/logging/mod.cpp
+        src/logging/logger.cpp
+
+        src/mem/mod.cpp
+        src/mem/allocator.cpp
+
+        src/utils/mod.cpp
+        src/utils/fs.cpp
+        src/utils/lazy.cpp
+        src/utils/noncopyable.cpp
+        src/utils/pointers.cpp
+        src/utils/strings.cpp
+)
+
+enable_warnings( ${PROJECT_NAME} )
 
 
-# Now pull in the subdirectories
-add_subdirectory( sl-core )
+###################
+#
+# Build tests
 
+set( SLCORE_LIB_TEST_SRCS
+    "tests/allocator-test.cpp"
+    "tests/lazy-test.cpp"
+    "tests/strings-test.cpp"
+)
+
+build_tests(
+    NAME core-tests
+    SOURCES ${SLCORE_LIB_TEST_SRCS}
+    LIBRARIES ${PROJECT_NAME}
+)
