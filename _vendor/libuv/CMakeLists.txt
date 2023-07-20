@@ -22,11 +22,15 @@
 
 cmake_minimum_required( VERSION 3.13 )
 
-project( catch2 LANGUAGES CXX VERSION 2.13.9 )
+project( libuv-root )
 
-add_library( ${PROJECT_NAME} INTERFACE )
+set( SL_LIBUV_VERSION "1.45.0" )
 
-target_include_directories( ${PROJECT_NAME} INTERFACE
-    ${CMAKE_CURRENT_SOURCE_DIR}/inc
+file( ARCHIVE_EXTRACT
+    INPUT "${CMAKE_CURRENT_SOURCE_DIR}/libuv-${SL_LIBUV_VERSION}.tar.gz"
+    DESTINATION "${CMAKE_CURRENT_SOURCE_DIR}"
 )
 
+option( LIBUV_BUILD_SHARED OFF )
+
+add_subdirectory( "libuv-${SL_LIBUV_VERSION}" )

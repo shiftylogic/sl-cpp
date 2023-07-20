@@ -25,3 +25,5 @@ cmake_minimum_required( VERSION 3.13 )
 project( vendor )
 
 add_subdirectory( catch2 )
+add_subdirectory( libuv )
+add_subdirectory( unordered_dense )

@@ -22,11 +22,19 @@
 
 cmake_minimum_required( VERSION 3.13 )
 
-project( catch2 LANGUAGES CXX VERSION 2.13.9 )
+project( unordered-dense-root )
 
-add_library( ${PROJECT_NAME} INTERFACE )
+set( SL_UNORDERED_DENSE_VERSION "4.0.1" )
 
-target_include_directories( ${PROJECT_NAME} INTERFACE
-    ${CMAKE_CURRENT_SOURCE_DIR}/inc
+file( ARCHIVE_EXTRACT
+    INPUT "${CMAKE_CURRENT_SOURCE_DIR}/unordered_dense-${SL_UNORDERED_DENSE_VERSION}.tar.gz"
+    DESTINATION "${CMAKE_CURRENT_SOURCE_DIR}"
 )
+
+add_subdirectory( "unordered_dense-${SL_UNORDERED_DENSE_VERSION}" )
+
+#
+# Make sure the demo compiles
+#
+add_subdirectory( "demo" )
 
