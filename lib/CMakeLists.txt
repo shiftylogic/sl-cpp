@@ -1,6 +1,6 @@
 # MIT License
 #
-# Copyright (c) 2022 Robert Anderson
+# Copyright (c) 2023-presnt Robert Anderson
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -20,9 +20,13 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-cmake_minimum_required( VERSION 3.13 )
+cmake_minimum_required( VERSION 3.26 )
 
-project( sl-libs )
+# Enable C++20 modules
+set( CMAKE_EXPERIMENTAL_CXX_MODULE_CMAKE_API "2182bf5c-ef0d-489a-91da-49dbc3090d2a" )
+set( CMAKE_EXPERIMENTAL_CXX_MODULE_DYNDEP 1 )
 
+
+# Now pull in the subdirectories
 add_subdirectory( first )
 

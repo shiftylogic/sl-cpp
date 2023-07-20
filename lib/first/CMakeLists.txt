@@ -1,6 +1,6 @@
 # MIT License
 #
-# Copyright (c) 2022 Robert Anderson
+# Copyright (c) 2023-present Robert Anderson
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -23,30 +23,6 @@
 cmake_minimum_required( VERSION 3.26 )
 
 project( first )
-
-set( PREBUILT_MODULE_PATH ${CMAKE_BINARY_DIR}/modules )
-set( EXTRA_FLAGS "" )
-
-file( MAKE_DIRECTORY ${PREBUILT_MODULE_PATH} )
-
-# Enable c++20 Modules
-set( CMAKE_EXPERIMENTAL_CXX_MODULE_CMAKE_API "2182bf5c-ef0d-489a-91da-49dbc3090d2a" )
-set( CMAKE_EXPERIMENTAL_CXX_MODULE_DYNDEP 1 )
-set( CMAKE_CXX_EXTENSIONS OFF )
-
-
-# Dump some data to see what is happening...
-message( STATUS "System root: ${CMAKE_SYSROOT}" )
-message( STATUS "System prefix: ${CMAKE_SYSTEM_PREFIX_PATH}" )
-message( STATUS "System include: ${CMAKE_INCLUDE_PATH}" )
-message( STATUS "Libraries: ${CMAKE_LIBRARY_PATH}" )
-
-execute_process(
-    COMMAND which ${CMAKE_CXX_COMPILER}
-    OUTPUT_VARIABLE CLANG_PP_X
-    OUTPUT_STRIP_TRAILING_WHITESPACE
-)
-message( STATUS "Which CLANG: ${CLANG_PP_X}" )
 
 
 ###################
