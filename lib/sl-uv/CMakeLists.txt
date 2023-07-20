@@ -1,6 +1,6 @@
 # MIT License
 #
-# Copyright (c) 2023-presnt Robert Anderson
+# Copyright (c) 2023-present Robert Anderson
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -20,14 +20,52 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-cmake_minimum_required( VERSION 3.26 )
+project( sl-uv )
 
-# Enable C++20 modules
-set( CMAKE_EXPERIMENTAL_CXX_MODULE_CMAKE_API "2182bf5c-ef0d-489a-91da-49dbc3090d2a" )
-set( CMAKE_EXPERIMENTAL_CXX_MODULE_DYNDEP 1 )
+add_library( ${PROJECT_NAME} )
+target_link_libraries( ${PROJECT_NAME} PUBLIC
+    sl-core
+    uv_a
+)
+target_sources( ${PROJECT_NAME} PUBLIC
+    FILE_SET cxx_modules
+    TYPE CXX_MODULES
+    FILES
+        src/mod.cpp
+        src/error.cpp
+        src/handle.cpp
+        src/loop.cpp
+        src/idler.cpp
+        src/signaler.cpp
+        src/timer.cpp
+)
+
+enable_warnings( ${PROJECT_NAME} )
 
 
-# Now pull in the subdirectories
-add_subdirectory( sl-core )
-add_subdirectory( sl-uv )
+###################
+#
+# Build tests
+
+set( SLUV_LIB_TEST_SRCS
+    "tests/idler-test.cpp"
+    "tests/timer-test.cpp"
+)
+
+build_tests(
+    NAME uv-tests
+    SOURCES ${SLUV_LIB_TEST_SRCS}
+    LIBRARIES ${PROJECT_NAME}
+)
+
+
+###################
+#
+# Build examples
+
+add_example(
+    NAME loop-demo
+    SOURCES examples/loop-demo.cpp
+    LIBRARIES sl-core ${PROJECT_NAME}
+)
 

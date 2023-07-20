@@ -22,34 +22,56 @@
  * SOFTWARE.
  */
 
-#ifndef __ASYNC_H_F46C90D0CFFE4DBFA17CC30527617F62__
-#define __ASYNC_H_F46C90D0CFFE4DBFA17CC30527617F62__
+module;
 
-#include <future>
-#include <tuple>
+#include <uv.h>
 
-namespace sl::test
+
+export module sl.uv:handle;
+
+import sl.logging;
+import sl.utils;
+
+
+namespace sl::uv
 {
 
-    static bool run_async( std::chrono::milliseconds wait, std::function< void() > fn )
+    template< typename HandleType >
+    class handle
     {
-        auto task   = std::async( std::launch::async, fn );
-        auto status = task.wait_for( wait );
-        return status == std::future_status::ready;
-    }
+    public:
+        explicit handle()
+            : _handle { new HandleType }
+        {
+            _handle->data = this;
+        }
 
-    template< typename T >
-    static std::tuple< bool, T > run_async( std::chrono::milliseconds wait,
-                                            std::function< T() > fn )
-    {
-        auto task   = std::async( std::launch::async, fn );
-        auto status = task.wait_for( wait );
-        if ( status == std::future_status::ready )
-            return std::make_tuple( true, task.get() );
-        else
-            return std::make_tuple( false, T() );
-    }
+        operator HandleType*() const noexcept { return _handle.get(); }
 
-}   // namespace sl::test
+        void close() { _handle.reset(); }
 
-#endif /* __ASYNC_H_F46C90D0CFFE4DBFA17CC30527617F62__ */
+        template< typename T >
+        static T* self( HandleType* handle )
+        {
+            return static_cast< T* >( handle->data );
+        }
+
+
+    private:
+        static void close_internal( HandleType* h )
+        {
+            ::uv_close( reinterpret_cast< uv_handle_t* >( h ), &handle::on_closed );
+        }
+
+        static void on_closed( uv_handle_t* h )
+        {
+            // Handle closing is asynchronous. When it is complete, then we can delete
+            // the underlying type
+            delete reinterpret_cast< HandleType* >( h );
+        }
+
+    protected:
+        sl::utils::custom_unique_ptr< HandleType, handle::close_internal > _handle;
+    };
+
+}   // namespace sl::uv

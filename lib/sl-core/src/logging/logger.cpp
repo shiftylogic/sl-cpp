@@ -39,33 +39,27 @@ namespace sl::logging
 
     constexpr size_t kMaxLogLine = 512;
 
-    enum class Level
-    {
-        Fatal,
-        Error,
-        Warning,
-        Info,
-        Trace,
+    export enum class log_level {
+        fatal,
+        error,
+        warning,
+        info,
+        trace,
     };
 
-    export class Logger
+    export class logger : public sl::utils::noncopyable
     {
     public:
-        Logger( const Logger& )            = delete;
-        Logger( Logger&& )                 = delete;
-        Logger& operator=( const Logger& ) = delete;
-        Logger&& operator=( Logger&& )     = delete;
-
-        Logger()
+        explicit logger()
             : _log( std::cout )
         {}
 
-        explicit Logger( const char* logFile )
+        explicit logger( const char* logFile )
             : _fLog( logFile, std::ios::app )
             , _log( _fLog )
         {}
 
-        void Log( Level level, const char* msg )
+        void log( log_level level, const char* msg )
         {
             const std::array< const char*, 5 > levels {
                 "FATAL", "ERROR", "WARNING", "INFO", "TRACE" };
@@ -75,7 +69,7 @@ namespace sl::logging
         }
 
         template< typename... Args >
-        void Log( Level level, const char* format, Args... args )
+        void log( log_level level, const char* format, Args... args )
         {
             std::array< char, kMaxLogLine > buf;
 
@@ -83,37 +77,37 @@ namespace sl::logging
             if ( count <= 0 )
                 throw std::runtime_error( "error formatting log string" );
 
-            Log( level, buf.data() );
+            log( level, buf.data() );
         }
 
         template< typename... Args >
-        void Fatal( const char* format, Args... args )
+        void fatal( const char* format, Args... args )
         {
-            Log( Level::Fatal, format, std::forward< Args >( args )... );
+            log( log_level::fatal, format, std::forward< Args >( args )... );
         }
 
         template< typename... Args >
-        void Error( const char* format, Args... args )
+        void error( const char* format, Args... args )
         {
-            Log( Level::Error, format, std::forward< Args >( args )... );
+            log( log_level::error, format, std::forward< Args >( args )... );
         }
 
         template< typename... Args >
-        void Warn( const char* format, Args... args )
+        void warn( const char* format, Args... args )
         {
-            Log( Level::Warning, format, std::forward< Args >( args )... );
+            log( log_level::warning, format, std::forward< Args >( args )... );
         }
 
         template< typename... Args >
-        void Info( const char* format, Args... args )
+        void info( const char* format, Args... args )
         {
-            Log( Level::Info, format, std::forward< Args >( args )... );
+            log( log_level::info, format, std::forward< Args >( args )... );
         }
 
         template< typename... Args >
-        void Trace( const char* format, Args... args )
+        void trace( const char* format, Args... args )
         {
-            Log( Level::Trace, format, std::forward< Args >( args )... );
+            log( log_level::trace, format, std::forward< Args >( args )... );
         }
 
     private:

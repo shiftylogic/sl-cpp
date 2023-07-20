@@ -22,34 +22,46 @@
  * SOFTWARE.
  */
 
-#ifndef __ASYNC_H_F46C90D0CFFE4DBFA17CC30527617F62__
-#define __ASYNC_H_F46C90D0CFFE4DBFA17CC30527617F62__
+module;
 
-#include <future>
-#include <tuple>
+#include <uv.h>
 
-namespace sl::test
+
+export module sl.uv:timer;
+
+import :error;
+import :handle;
+import :loop;
+
+
+namespace sl::uv
 {
 
-    static bool run_async( std::chrono::milliseconds wait, std::function< void() > fn )
+    export template< typename Logger, typename Callable >
+    class timer : handle< uv_timer_t >
     {
-        auto task   = std::async( std::launch::async, fn );
-        auto status = task.wait_for( wait );
-        return status == std::future_status::ready;
-    }
+    public:
+        explicit timer( uv::loop< Logger >& loop, uint64_t timeout, Callable fn )
+            : timer( loop, timeout, 0, fn )
+        {}
 
-    template< typename T >
-    static std::tuple< bool, T > run_async( std::chrono::milliseconds wait,
-                                            std::function< T() > fn )
-    {
-        auto task   = std::async( std::launch::async, fn );
-        auto status = task.wait_for( wait );
-        if ( status == std::future_status::ready )
-            return std::make_tuple( true, task.get() );
-        else
-            return std::make_tuple( false, T() );
-    }
+        explicit timer( uv::loop< Logger >& loop, uint64_t timeout, uint64_t repeat, Callable fn )
+            : _fn( fn )
+        {
+            uv::error::throw_if( ::uv_timer_init( loop, *this ),
+                                 "uv_timer_init",
+                                 "error initializing timer handle" );
 
-}   // namespace sl::test
+            uv::error::throw_if( ::uv_timer_start( *this, &timer::on_timer, timeout, repeat ),
+                                 "uv_timer_start",
+                                 "failed to start timer" );
+        }
 
-#endif /* __ASYNC_H_F46C90D0CFFE4DBFA17CC30527617F62__ */
+    private:
+        static void on_timer( uv_timer_t* h ) { handle::self< timer >( h )->_fn(); }
+
+    private:
+        Callable _fn;
+    };
+
+}   // namespace sl::uv

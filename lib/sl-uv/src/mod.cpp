@@ -22,34 +22,10 @@
  * SOFTWARE.
  */
 
-#ifndef __ASYNC_H_F46C90D0CFFE4DBFA17CC30527617F62__
-#define __ASYNC_H_F46C90D0CFFE4DBFA17CC30527617F62__
+export module sl.uv;
 
-#include <future>
-#include <tuple>
-
-namespace sl::test
-{
-
-    static bool run_async( std::chrono::milliseconds wait, std::function< void() > fn )
-    {
-        auto task   = std::async( std::launch::async, fn );
-        auto status = task.wait_for( wait );
-        return status == std::future_status::ready;
-    }
-
-    template< typename T >
-    static std::tuple< bool, T > run_async( std::chrono::milliseconds wait,
-                                            std::function< T() > fn )
-    {
-        auto task   = std::async( std::launch::async, fn );
-        auto status = task.wait_for( wait );
-        if ( status == std::future_status::ready )
-            return std::make_tuple( true, task.get() );
-        else
-            return std::make_tuple( false, T() );
-    }
-
-}   // namespace sl::test
-
-#endif /* __ASYNC_H_F46C90D0CFFE4DBFA17CC30527617F62__ */
+export import :error;
+export import :loop;
+export import :idler;
+export import :signaler;
+export import :timer;

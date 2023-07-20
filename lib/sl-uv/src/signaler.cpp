@@ -22,34 +22,45 @@
  * SOFTWARE.
  */
 
-#ifndef __ASYNC_H_F46C90D0CFFE4DBFA17CC30527617F62__
-#define __ASYNC_H_F46C90D0CFFE4DBFA17CC30527617F62__
+module;
 
-#include <future>
-#include <tuple>
+#include <uv.h>
 
-namespace sl::test
+
+export module sl.uv:signaler;
+
+import :error;
+import :handle;
+import :loop;
+
+
+namespace sl::uv
 {
 
-    static bool run_async( std::chrono::milliseconds wait, std::function< void() > fn )
+    export template< typename Logger, typename Callable >
+    class signaler : handle< uv_signal_t >
     {
-        auto task   = std::async( std::launch::async, fn );
-        auto status = task.wait_for( wait );
-        return status == std::future_status::ready;
-    }
+    public:
+        explicit signaler( uv::loop< Logger >& loop, Callable fn, int signum )
+            : _fn( fn )
+        {
+            uv::error::throw_if( ::uv_signal_init( loop, *this ),
+                                 "uv_signal_init",
+                                 "error initializing signal handle" );
 
-    template< typename T >
-    static std::tuple< bool, T > run_async( std::chrono::milliseconds wait,
-                                            std::function< T() > fn )
-    {
-        auto task   = std::async( std::launch::async, fn );
-        auto status = task.wait_for( wait );
-        if ( status == std::future_status::ready )
-            return std::make_tuple( true, task.get() );
-        else
-            return std::make_tuple( false, T() );
-    }
+            uv::error::throw_if( ::uv_signal_start( *this, &signaler::on_signal, signum ),
+                                 "uv_signal_start",
+                                 "failed to start watching signal" );
+        }
 
-}   // namespace sl::test
+    private:
+        static void on_signal( uv_signal_t* h, int /* signum */ )
+        {
+            handle::self< signaler >( h )->_fn();
+        }
 
-#endif /* __ASYNC_H_F46C90D0CFFE4DBFA17CC30527617F62__ */
+    private:
+        Callable _fn;
+    };
+
+}   // namespace sl::uv
