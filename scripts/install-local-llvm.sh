@@ -36,7 +36,9 @@ DL_LLVM_RELEASE_DIR="llvmorg-${DL_LLVM_VERSION}"
 DL_LLVM_RELEASE_FILE="clang+llvm-${DL_LLVM_VERSION}-${DL_LLVM_ARCH_TAG}.tar.xz"
 DL_LLVM_URI="${DL_LLVM_BASE}/${DL_LLVM_RELEASE_DIR}/${DL_LLVM_RELEASE_FILE}"
 
-echo "  > uri: ${DL_LLVM_URI}"
+echo "  > Base:    ${DL_LLVM_BASE}"
+echo "  > Release: v${DL_LLVM_VERSION}"
+echo "  > File:    ${DL_LLVM_RELEASE_FILE}"
 
 mkdir -p .tools/llvm
 curl -sL "${DL_LLVM_URI}" | tar -zx --strip-components=1 -C .tools/llvm

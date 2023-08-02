@@ -36,7 +36,9 @@ DL_CMAKE_RELEASE_DIR="v${DL_CMAKE_VERSION}"
 DL_CMAKE_RELEASE_FILE="cmake-${DL_CMAKE_VERSION}-macos-universal.tar.gz"
 DL_CMAKE_URI="${DL_CMAKE_BASE}/${DL_CMAKE_RELEASE_DIR}/${DL_CMAKE_RELEASE_FILE}"
 
-echo "  > uri: ${DL_CMAKE_URI}"
+echo "  > Base:    ${DL_CMAKE_BASE}"
+echo "  > Release: v${DL_CMAKE_VERSION}"
+echo "  > File:    ${DL_CMAKE_RELEASE_FILE}"
 
 mkdir -p .tools/cmake
 curl -sL "${DL_CMAKE_URI}" | tar -zx --strip-components=1 -C .tools/cmake
