@@ -20,7 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-cmake_minimum_required( VERSION 3.13 )
+cmake_minimum_required( VERSION 3.26 )
 
 project( sl-root )
 
@@ -37,6 +37,9 @@ include( "cmake/test.cmake" )
 
 # Vendor modules / libraries
 add_subdirectory( "_vendor" )
+
+# For the repo libraries / apps, we want c++20 modules
+enable_modules()
 
 # add all library components
 add_subdirectory( "lib" )

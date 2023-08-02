@@ -22,6 +22,12 @@
 
 set( EXAMPLES_OUTPUT_DIR "examples" )
 
+function(enable_modules)
+    # Enable C++20 modules
+    set( CMAKE_EXPERIMENTAL_CXX_MODULE_CMAKE_API "2182bf5c-ef0d-489a-91da-49dbc3090d2a" PARENT_SCOPE )
+    set( CMAKE_EXPERIMENTAL_CXX_MODULE_DYNDEP 1 PARENT_SCOPE )
+endfunction(enable_modules)
+
 function(enable_warnings target)
     if(MSVC)
         # Disable default /W3
