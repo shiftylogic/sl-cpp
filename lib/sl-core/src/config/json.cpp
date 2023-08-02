@@ -24,53 +24,57 @@
 
 module;
 
-#include <uv.h>
+#include <iostream>
+
+#define JSON_HAS_CPP_20                      1
+#define JSON_NO_IO                           0
+#define JSON_SKIP_UNSUPPORTED_COMPILER_CHECK 1
+#include <nlohmann/json.hpp>
 
 
-export module sl.uv:handle;
+export module sl.config:json;
 
-import sl.utils;
+import sl.io;
+import :values;
 
 
-namespace sl::uv
+namespace sl::config
 {
 
-    template< typename HandleType >
-    class handle
+    struct json
     {
     public:
-        explicit handle()
-            : _handle { new HandleType }
+        explicit json( const std::string_view data )
         {
-            _handle->data = this;
+            auto j = nlohmann::json::parse( std::begin( data ), std::end( data ) );
+            _data  = j.flatten();
         }
-
-        operator HandleType*() const noexcept { return _handle.get(); }
-
-        void close() { _handle.reset(); }
 
         template< typename T >
-        static T* self( HandleType* handle )
+        T get( const std::string& key ) const
         {
-            return static_cast< T* >( handle->data );
-        }
+            if ( !_data.contains( key ) )
+                throw std::runtime_error( "config key not found" );
 
+            return _data[key].get< T >();
+        }
 
     private:
-        static void close_internal( HandleType* h )
-        {
-            ::uv_close( reinterpret_cast< uv_handle_t* >( h ), &handle::on_closed );
-        }
-
-        static void on_closed( uv_handle_t* h )
-        {
-            // Handle closing is asynchronous. When it is complete, then we can delete
-            // the underlying type
-            delete reinterpret_cast< HandleType* >( h );
-        }
-
-    protected:
-        sl::utils::custom_unique_ptr< HandleType, handle::close_internal > _handle;
+        nlohmann::json _data;
     };
 
-}   // namespace sl::uv
+    export auto json_from_string( const std::string_view data )
+    {
+        return config::values { config::json { data } };
+    }
+
+    export auto load_json( const char* const path )
+    {
+        auto mf   = io::mapped_file( path, io::cache_hint::sequential );
+        auto mv   = mf.map_view( 0, mf.size() );
+        auto data = mv.as_items< char >();
+
+        return json_from_string( std::string_view { data.data(), data.size() } );
+    }
+
+}   // namespace sl::config

@@ -24,53 +24,31 @@
 
 module;
 
-#include <uv.h>
+#include <span>
+#include <string_view>
 
 
-export module sl.uv:handle;
-
-import sl.utils;
+export module sl.config:values;
 
 
-namespace sl::uv
+namespace sl::config
 {
 
-    template< typename HandleType >
-    class handle
+    export template< typename ConfigData >
+    struct values
     {
-    public:
-        explicit handle()
-            : _handle { new HandleType }
-        {
-            _handle->data = this;
-        }
-
-        operator HandleType*() const noexcept { return _handle.get(); }
-
-        void close() { _handle.reset(); }
+        explicit values( ConfigData&& data )
+            : _data { std::move( data ) }
+        {}
 
         template< typename T >
-        static T* self( HandleType* handle )
+        inline T get( const std::string& key ) const
         {
-            return static_cast< T* >( handle->data );
+            return _data.template get< T >( key );
         }
-
 
     private:
-        static void close_internal( HandleType* h )
-        {
-            ::uv_close( reinterpret_cast< uv_handle_t* >( h ), &handle::on_closed );
-        }
-
-        static void on_closed( uv_handle_t* h )
-        {
-            // Handle closing is asynchronous. When it is complete, then we can delete
-            // the underlying type
-            delete reinterpret_cast< HandleType* >( h );
-        }
-
-    protected:
-        sl::utils::custom_unique_ptr< HandleType, handle::close_internal > _handle;
+        ConfigData _data;
     };
 
-}   // namespace sl::uv
+}   // namespace sl::config

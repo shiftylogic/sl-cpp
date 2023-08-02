@@ -22,55 +22,37 @@
  * SOFTWARE.
  */
 
-module;
+#include <catch2/catch.hpp>
 
-#include <uv.h>
+import sl.config;
 
-
-export module sl.uv:handle;
-
-import sl.utils;
-
-
-namespace sl::uv
+TEST_CASE( "Parse JSON config", "[config][json]" )
 {
-
-    template< typename HandleType >
-    class handle
+    auto text = R"(
     {
-    public:
-        explicit handle()
-            : _handle { new HandleType }
-        {
-            _handle->data = this;
+        "Image": {
+            "Width":  800,
+            "Height": 600,
+            "Title":  "View from 15th Floor",
+            "Thumbnail": {
+                "Url":    "http://www.example.com/image/481989943",
+                "Height": 125,
+                "Width":  100
+            },
+            "Animated" : false,
+            "IDs": [116, 943, 234, -38793],
+            "DeletionDate": null,
+            "Distance": 12.723374634
         }
+    }
+    )";
 
-        operator HandleType*() const noexcept { return _handle.get(); }
-
-        void close() { _handle.reset(); }
-
-        template< typename T >
-        static T* self( HandleType* handle )
-        {
-            return static_cast< T* >( handle->data );
-        }
-
-
-    private:
-        static void close_internal( HandleType* h )
-        {
-            ::uv_close( reinterpret_cast< uv_handle_t* >( h ), &handle::on_closed );
-        }
-
-        static void on_closed( uv_handle_t* h )
-        {
-            // Handle closing is asynchronous. When it is complete, then we can delete
-            // the underlying type
-            delete reinterpret_cast< HandleType* >( h );
-        }
-
-    protected:
-        sl::utils::custom_unique_ptr< HandleType, handle::close_internal > _handle;
-    };
-
-}   // namespace sl::uv
+    auto cfg = sl::config::json_from_string( text );
+    REQUIRE( 800 == cfg.get< uint64_t >( "/Image/Width" ) );
+    REQUIRE( 600 == cfg.get< uint64_t >( "/Image/Height" ) );
+    REQUIRE( cfg.get< std::string >( "/Image/Thumbnail/Url" ).starts_with( "http://" ) );
+    REQUIRE( 943 == cfg.get< int64_t >( "/Image/IDs/1" ) );
+    REQUIRE( -38793 == cfg.get< int64_t >( "/Image/IDs/3" ) );
+    REQUIRE( false == cfg.get< bool >( "/Image/Animated" ) );
+    REQUIRE( 12.723374634 == cfg.get< double >( "/Image/Distance" ) );
+}

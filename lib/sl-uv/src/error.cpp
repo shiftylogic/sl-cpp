@@ -30,15 +30,12 @@ module;
 
 export module sl.uv:error;
 
-import sl.logging;
-
 
 namespace sl::uv
 {
 
-    export class error : public std::runtime_error
+    export struct error : public std::runtime_error
     {
-    public:
         error( const char* api, const char* message, int code )
             : std::runtime_error { message }
             , _api { api }

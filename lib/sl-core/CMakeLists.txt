@@ -23,10 +23,17 @@
 project( sl-core )
 
 add_library( ${PROJECT_NAME} )
+target_link_libraries( ${PROJECT_NAME} PUBLIC
+    json
+)
 target_sources( ${PROJECT_NAME} PUBLIC
     FILE_SET cxx_modules
     TYPE CXX_MODULES
     FILES
+        src/config/mod.cpp
+        src/config/json.cpp
+        src/config/values.cpp
+
         src/io/mod.cpp
         src/io/cache-hint.cpp
         src/io/error.cpp
@@ -57,6 +64,7 @@ enable_warnings( ${PROJECT_NAME} )
 
 set( SLCORE_LIB_TEST_SRCS
     "tests/allocator-test.cpp"
+    "tests/config-test.cpp"
     "tests/lazy-test.cpp"
     "tests/strings-test.cpp"
 )

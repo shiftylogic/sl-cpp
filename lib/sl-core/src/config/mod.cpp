@@ -22,55 +22,7 @@
  * SOFTWARE.
  */
 
-module;
+export module sl.config;
 
-#include <uv.h>
-
-
-export module sl.uv:handle;
-
-import sl.utils;
-
-
-namespace sl::uv
-{
-
-    template< typename HandleType >
-    class handle
-    {
-    public:
-        explicit handle()
-            : _handle { new HandleType }
-        {
-            _handle->data = this;
-        }
-
-        operator HandleType*() const noexcept { return _handle.get(); }
-
-        void close() { _handle.reset(); }
-
-        template< typename T >
-        static T* self( HandleType* handle )
-        {
-            return static_cast< T* >( handle->data );
-        }
-
-
-    private:
-        static void close_internal( HandleType* h )
-        {
-            ::uv_close( reinterpret_cast< uv_handle_t* >( h ), &handle::on_closed );
-        }
-
-        static void on_closed( uv_handle_t* h )
-        {
-            // Handle closing is asynchronous. When it is complete, then we can delete
-            // the underlying type
-            delete reinterpret_cast< HandleType* >( h );
-        }
-
-    protected:
-        sl::utils::custom_unique_ptr< HandleType, handle::close_internal > _handle;
-    };
-
-}   // namespace sl::uv
+export import :values;
+export import :json;
