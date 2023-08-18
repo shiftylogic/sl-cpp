@@ -27,6 +27,8 @@
 
 # Build artifacts
 /build/
+/.tools/
+/.config/
 
 # IDE artifacts
 *.swp
