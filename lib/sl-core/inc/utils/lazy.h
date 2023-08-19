@@ -1,7 +1,7 @@
 /**
  * MIT License
  *
- * Copyright (c) 2023 Robert Anderson
+ * Copyright (c) 2023-present Robert Anderson
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,13 +32,13 @@ namespace sl::utils
 {
 
     template< typename T, typename... Args >
-    struct Lazy
+    struct lazy
     {
-        Lazy( Args... args )
+        explicit lazy( Args... args )
             : _args( args... )
         {}
 
-        T& Get()
+        T& get()
         {
             if ( !_value )
                 std::apply( [&]( auto&&... args ) { _value.emplace( args... ); }, _args );

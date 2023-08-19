@@ -1,7 +1,7 @@
 /**
  * MIT License
  *
- * Copyright (c) 2023 Robert Anderson
+ * Copyright (c) 2023-present Robert Anderson
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -49,14 +49,14 @@ TEST_CASE( "Raw alloc / free", "[utils][memory]" )
     };
 
     {
-        auto allocator = sl::mem::Allocator( { alloc, realloc, free } );
+        auto allocator = sl::mem::allocator( { alloc, realloc, free } );
 
-        auto ptr = allocator.Alloc( 1 );
+        auto ptr = allocator.alloc( 1 );
         REQUIRE( ptr == FAKE_PTR );
         REQUIRE( allocs == 1 );
         REQUIRE( frees == 0 );
 
-        allocator.Free( ptr );
+        allocator.free( ptr );
         REQUIRE( allocs == 1 );
         REQUIRE( frees == 1 );
     }
@@ -75,36 +75,36 @@ TEST_CASE( "Type alloc / free", "[utils][memory]" )
     };
     auto free = []( void* ptr ) { delete[] reinterpret_cast< unsigned char* >( ptr ); };
 
-    static size_t ctorCalled = 0;
-    static size_t dtorCalled = 0;
+    static size_t ctor_called = 0;
+    static size_t dtor_called = 0;
 
-    struct Foo
+    struct foo
     {
-        Foo( int cookie )
+        foo( int cookie )
             : _cookie( cookie )
         {
-            ctorCalled += 1;
+            ctor_called += 1;
         }
 
-        ~Foo() { dtorCalled += 1; }
+        ~foo() { dtor_called += 1; }
 
-        int Cookie() const { return _cookie; }
+        int cookie() const { return _cookie; }
 
     private:
         int _cookie;
     };
 
-    sl::mem::Allocator allocator( { alloc, realloc, free } );
+    sl::mem::allocator allocator( { alloc, realloc, free } );
 
-    auto foo = allocator.AllocT< Foo >( 42 );
-    REQUIRE( foo != nullptr );
-    REQUIRE( ctorCalled == 1 );
-    REQUIRE( dtorCalled == 0 );
-    REQUIRE( foo->Cookie() == 42 );
+    auto f = allocator.alloc_t< foo >( 42 );
+    REQUIRE( f != nullptr );
+    REQUIRE( ctor_called == 1 );
+    REQUIRE( dtor_called == 0 );
+    REQUIRE( f->cookie() == 42 );
 
-    allocator.FreeT( foo );
-    REQUIRE( ctorCalled == 1 );
-    REQUIRE( dtorCalled == 1 );
+    allocator.free_t( f );
+    REQUIRE( ctor_called == 1 );
+    REQUIRE( dtor_called == 1 );
 }
 
 TEST_CASE( "Type alloc w/ std::unique_ptr", "[utils][memory]" )
@@ -116,35 +116,35 @@ TEST_CASE( "Type alloc w/ std::unique_ptr", "[utils][memory]" )
     };
     auto free = []( void* ptr ) { delete[] reinterpret_cast< unsigned char* >( ptr ); };
 
-    static size_t ctorCalled = 0;
-    static size_t dtorCalled = 0;
+    static size_t ctor_called = 0;
+    static size_t dtor_called = 0;
 
-    struct Foo
+    struct foo
     {
-        Foo( int cookie )
+        foo( int cookie )
             : _cookie( cookie )
         {
-            ctorCalled += 1;
+            ctor_called += 1;
         }
 
-        ~Foo() { dtorCalled += 1; }
+        ~foo() { dtor_called += 1; }
 
-        int Cookie() const { return _cookie; }
+        int cookie() const { return _cookie; }
 
     private:
         int _cookie;
     };
 
-    sl::mem::Allocator allocator( { alloc, realloc, free } );
+    sl::mem::allocator allocator( { alloc, realloc, free } );
 
     {
-        auto foo = allocator.AllocSP< Foo >( 73 );
-        REQUIRE( foo );
-        REQUIRE( ctorCalled == 1 );
-        REQUIRE( dtorCalled == 0 );
-        REQUIRE( foo->Cookie() == 73 );
+        auto f = allocator.alloc_sp< foo >( 73 );
+        REQUIRE( f );
+        REQUIRE( ctor_called == 1 );
+        REQUIRE( dtor_called == 0 );
+        REQUIRE( f->cookie() == 73 );
     }
 
-    REQUIRE( ctorCalled == 1 );
-    REQUIRE( dtorCalled == 1 );
+    REQUIRE( ctor_called == 1 );
+    REQUIRE( dtor_called == 1 );
 }

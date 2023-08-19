@@ -1,7 +1,7 @@
 /**
  * MIT License
  *
- * Copyright (c) 2023 Robert Anderson
+ * Copyright (c) 2023-present Robert Anderson
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,7 +28,7 @@
 
 TEST_CASE( "Formatted lengths", "[utils][strings]" )
 {
-    auto count = sl::utils::CalculateFormattedLength( "something: %s - with <%i>", "dude", 12387 );
+    auto count = sl::utils::calculate_string_length( "something: %s - with <%i>", "dude", 12387 );
     REQUIRE( count == strlen( "something: dude - with <12387>" ) );
 }
 
@@ -37,7 +37,7 @@ TEST_CASE( "String formatting (non-allocating)", "[utils][strings]" )
     std::string expected( "Int: 42, String: test" );
     std::array< char, 256 > buffer;
 
-    auto count = sl::utils::FormatString( buffer, "Int: %d, String: %s", 42, "test" );
+    auto count = sl::utils::format_string( buffer, "Int: %d, String: %s", 42, "test" );
     REQUIRE( count == expected.size() + 1 );
     REQUIRE( buffer[count - 1] == 0 );
     REQUIRE( std::string( buffer.data(), count - 1 ) == expected );
@@ -47,7 +47,7 @@ TEST_CASE( "String formatting (allocating)", "[utils][strings]" )
 {
     std::string expected( "This string contains a string (a string) and a float (1.123)." );
 
-    auto actual = sl::utils::FormatString(
+    auto actual = sl::utils::format_string(
         "This string contains a string (%s) and a float (%1.3f).", "a string", 1.123f );
     REQUIRE( actual.size() == expected.size() );
     REQUIRE( actual == expected );
@@ -57,31 +57,31 @@ TEST_CASE( "String replace all matching chars", "[utils][strings]" )
 {
     std::string str = "aabbbbabaabaaacdd999sdf98";
 
-    sl::utils::ReplaceAll( str, 's', '+' );
+    sl::utils::replace_all( str, 's', '+' );
     REQUIRE( str == "aabbbbabaabaaacdd999+df98" );
 
-    sl::utils::ReplaceAll( str, '8', '+' );
+    sl::utils::replace_all( str, '8', '+' );
     REQUIRE( str == "aabbbbabaabaaacdd999+df9+" );
 
-    sl::utils::ReplaceAll( str, 'b', '+' );
+    sl::utils::replace_all( str, 'b', '+' );
     REQUIRE( str == "aa++++a+aa+aaacdd999+df9+" );
 
-    sl::utils::ReplaceAll( str, 'f', '+' );
+    sl::utils::replace_all( str, 'f', '+' );
     REQUIRE( str == "aa++++a+aa+aaacdd999+d+9+" );
 
-    sl::utils::ReplaceAll( str, '9', '+' );
+    sl::utils::replace_all( str, '9', '+' );
     REQUIRE( str == "aa++++a+aa+aaacdd++++d+++" );
 
-    sl::utils::ReplaceAll( str, 'a', '+' );
+    sl::utils::replace_all( str, 'a', '+' );
     REQUIRE( str == "++++++++++++++cdd++++d+++" );
 
-    sl::utils::ReplaceAll( str, 'd', '+' );
+    sl::utils::replace_all( str, 'd', '+' );
     REQUIRE( str == "++++++++++++++c++++++++++" );
 
-    sl::utils::ReplaceAll( str, 'c', '+' );
+    sl::utils::replace_all( str, 'c', '+' );
     REQUIRE( str == "+++++++++++++++++++++++++" );
 
-    sl::utils::ReplaceAll( str, '+', '0' );
+    sl::utils::replace_all( str, '+', '0' );
     REQUIRE( str == "0000000000000000000000000" );
 }
 
@@ -89,21 +89,21 @@ TEST_CASE( "String snake to pascal", "[utils][strings]" )
 {
     // Make sure it is not in-place
     std::string str = "test_the_thing";
-    auto res        = sl::utils::SnakeToPascal( str );
+    auto res        = sl::utils::snake_to_pascal( str );
     REQUIRE( res == "TestTheThing" );
     REQUIRE( res.size() == 12 );
     REQUIRE( str == "test_the_thing" );
 
     // Now, just a bunch of different variations.
-    REQUIRE( sl::utils::SnakeToPascal( "" ) == "" );
-    REQUIRE( sl::utils::SnakeToPascal( "_" ) == "" );
-    REQUIRE( sl::utils::SnakeToPascal( "a" ) == "A" );
-    REQUIRE( sl::utils::SnakeToPascal( "B" ) == "B" );
-    REQUIRE( sl::utils::SnakeToPascal( "Ba" ) == "Ba" );
-    REQUIRE( sl::utils::SnakeToPascal( "ba" ) == "Ba" );
-    REQUIRE( sl::utils::SnakeToPascal( "bA" ) == "BA" );
-    REQUIRE( sl::utils::SnakeToPascal( "aaa_bbbbb_c" ) == "AaaBbbbbC" );
-    REQUIRE( sl::utils::SnakeToPascal( "_a_bbbbb_c" ) == "ABbbbbC" );
-    REQUIRE( sl::utils::SnakeToPascal( "_a_bbbBb_c" ) == "ABbbBbC" );
-    REQUIRE( sl::utils::SnakeToPascal( "_a_bbbbb_" ) == "ABbbbb" );
+    REQUIRE( sl::utils::snake_to_pascal( "" ) == "" );
+    REQUIRE( sl::utils::snake_to_pascal( "_" ) == "" );
+    REQUIRE( sl::utils::snake_to_pascal( "a" ) == "A" );
+    REQUIRE( sl::utils::snake_to_pascal( "B" ) == "B" );
+    REQUIRE( sl::utils::snake_to_pascal( "Ba" ) == "Ba" );
+    REQUIRE( sl::utils::snake_to_pascal( "ba" ) == "Ba" );
+    REQUIRE( sl::utils::snake_to_pascal( "bA" ) == "BA" );
+    REQUIRE( sl::utils::snake_to_pascal( "aaa_bbbbb_c" ) == "AaaBbbbbC" );
+    REQUIRE( sl::utils::snake_to_pascal( "_a_bbbbb_c" ) == "ABbbbbC" );
+    REQUIRE( sl::utils::snake_to_pascal( "_a_bbbBb_c" ) == "ABbbBbC" );
+    REQUIRE( sl::utils::snake_to_pascal( "_a_bbbbb_" ) == "ABbbbb" );
 }

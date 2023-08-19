@@ -1,7 +1,7 @@
 /**
  * MIT License
  *
- * Copyright (c) 2023 Robert Anderson
+ * Copyright (c) 2023-present Robert Anderson
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,7 +29,7 @@ namespace sl::utils
 {
 
     template< typename T >
-    constexpr const T Sign( const T v )
+    constexpr const T sign( const T v )
     {
         return v == 0 ? 0.0f : ( v < 0 ? -1.0f : +1.0f );
     }

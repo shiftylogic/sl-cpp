@@ -1,7 +1,7 @@
 /**
  * MIT License
  *
- * Copyright (c) 2023 Robert Anderson
+ * Copyright (c) 2023-present Robert Anderson
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,47 +28,47 @@
 
 TEST_CASE( "Lazy no args", "[utils]" )
 {
-    static size_t ctorCalled = 0;
-    static size_t dtorCalled = 0;
+    static size_t ctor_called = 0;
+    static size_t dtor_called = 0;
 
-    struct Thing
+    struct thing
     {
-        Thing() { ctorCalled += 1; }
-        ~Thing() { dtorCalled += 1; }
+        thing() { ctor_called += 1; }
+        ~thing() { dtor_called += 1; }
     };
 
     {
-        sl::utils::Lazy< Thing > thing;
-        REQUIRE( ctorCalled == 0 );
-        REQUIRE( dtorCalled == 0 );
+        sl::utils::lazy< thing > thng;
+        REQUIRE( ctor_called == 0 );
+        REQUIRE( dtor_called == 0 );
 
-        thing.Get();
-        REQUIRE( ctorCalled == 1 );
-        REQUIRE( dtorCalled == 0 );
+        thng.get();
+        REQUIRE( ctor_called == 1 );
+        REQUIRE( dtor_called == 0 );
     }
 
-    REQUIRE( ctorCalled == 1 );
-    REQUIRE( dtorCalled == 1 );
+    REQUIRE( ctor_called == 1 );
+    REQUIRE( dtor_called == 1 );
 }
 
 TEST_CASE( "Lazy w/ args", "[utils]" )
 {
-    static size_t ctorCalled = 0;
-    static size_t dtorCalled = 0;
+    static size_t ctor_called = 0;
+    static size_t dtor_called = 0;
 
-    struct Thing
+    struct thing
     {
-        Thing( int cookie1, std::string cookie2 )
+        thing( int cookie1, std::string cookie2 )
             : _cookie1( cookie1 )
             , _cookie2( cookie2 )
         {
-            ctorCalled += 1;
+            ctor_called += 1;
         }
 
-        ~Thing() { dtorCalled += 1; }
+        ~thing() { dtor_called += 1; }
 
-        int Cookie1() const { return _cookie1; }
-        std::string Cookie2() const { return _cookie2; }
+        int cookie1() const { return _cookie1; }
+        std::string cookie2() const { return _cookie2; }
 
     private:
         int _cookie1;
@@ -76,20 +76,20 @@ TEST_CASE( "Lazy w/ args", "[utils]" )
     };
 
     {
-        sl::utils::Lazy< Thing, int, std::string > thing( 42, "dude" );
-        REQUIRE( ctorCalled == 0 );
-        REQUIRE( dtorCalled == 0 );
+        sl::utils::lazy< thing, int, std::string > thng( 42, "dude" );
+        REQUIRE( ctor_called == 0 );
+        REQUIRE( dtor_called == 0 );
 
-        auto& t = thing.Get();
-        REQUIRE( ctorCalled == 1 );
-        REQUIRE( dtorCalled == 0 );
+        auto& t = thng.get();
+        REQUIRE( ctor_called == 1 );
+        REQUIRE( dtor_called == 0 );
 
-        auto& t2 = thing.Get();
+        auto& t2 = thng.get();
         REQUIRE( &t == &t2 );
-        REQUIRE( t.Cookie1() == 42 );
-        REQUIRE( t.Cookie2() == "dude" );
+        REQUIRE( t.cookie1() == 42 );
+        REQUIRE( t.cookie2() == "dude" );
     }
 
-    REQUIRE( ctorCalled == 1 );
-    REQUIRE( dtorCalled == 1 );
+    REQUIRE( ctor_called == 1 );
+    REQUIRE( dtor_called == 1 );
 }

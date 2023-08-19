@@ -1,7 +1,7 @@
 /**
  * MIT License
  *
- * Copyright (c) 2023 Robert Anderson
+ * Copyright (c) 2023-present Robert Anderson
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,17 +33,16 @@
 namespace sl::mem
 {
 
-    class Allocator
+    struct allocator
     {
-    public:
-        struct RawFunctions
+        struct raw_functions
         {
-            std::function< void*( size_t ) > Alloc;
-            std::function< void*( void*, size_t ) > ReAlloc;
-            std::function< void( void* ) > Free;
+            std::function< void*( size_t ) > alloc;
+            std::function< void*( void*, size_t ) > realloc;
+            std::function< void( void* ) > free;
         };
 
-        explicit Allocator( RawFunctions raw )
+        explicit allocator( raw_functions raw )
             : _mem( raw )
         {}
 
@@ -51,20 +50,20 @@ namespace sl::mem
          * Raw memory allocations. Returns need to be cast, no management, must free using
          * this same allocator instance.
          **/
-        void* Alloc( size_t size ) const noexcept { return _mem.Alloc( size ); }
-        void* ReAlloc( void* ptr, size_t size ) const noexcept { return _mem.ReAlloc( ptr, size ); }
-        void Free( void* ptr ) const noexcept { _mem.Free( ptr ); }
+        void* alloc( size_t size ) const noexcept { return _mem.alloc( size ); }
+        void* realloc( void* ptr, size_t size ) const noexcept { return _mem.realloc( ptr, size ); }
+        void free( void* ptr ) const noexcept { _mem.free( ptr ); }
 
         /**
          * Templated allocators for allocating type instances, and returning raw pointers.
          **/
         template< typename T, typename... Args >
-        T* AllocT( Args... args ) const
+        T* alloc_t( Args... args ) const
         {
-            auto mem_free = _mem.Free;
+            auto mem_free = _mem.free;
 
             // Allocate and store the object into a custom std::unique_ptr
-            auto sp = std::unique_ptr< void, decltype( mem_free ) >( _mem.Alloc( sizeof( T ) ),
+            auto sp = std::unique_ptr< void, decltype( mem_free ) >( _mem.alloc( sizeof( T ) ),
                                                                      mem_free );
 
             // To have the ctor run, we need to perform a placement new here.
@@ -79,24 +78,24 @@ namespace sl::mem
          * Memory deletion for templated allocator above.
          **/
         template< typename T >
-        void FreeT( T* t ) const
+        void free_t( T* t ) const
         {
             // Call destructor directly on T first
             t->~T();
 
             // Now we can free the memory
-            _mem.Free( t );
+            _mem.free( t );
         }
 
         /**
          * Templated allocation of typed values with "custom" unique_ptr returned for de-allocation.
          **/
         template< typename T, typename... Args >
-        auto AllocSP( Args... args ) const
+        auto alloc_sp( Args... args ) const
         {
             // The custom deleter for this std::unique_ptr will need to properly
             // destruct object before freeing memory
-            auto mem_free = _mem.Free;
+            auto mem_free = _mem.free;
             auto deleter  = [mem_free]( T* t ) {
                 // Call destructor directly on T first
                 t->~T();
@@ -106,7 +105,7 @@ namespace sl::mem
             };
 
             // Allocate and store the object into a custom std::unique_ptr
-            auto sp = std::unique_ptr< void, decltype( mem_free ) >( _mem.Alloc( sizeof( T ) ),
+            auto sp = std::unique_ptr< void, decltype( mem_free ) >( _mem.alloc( sizeof( T ) ),
                                                                      mem_free );
 
             // To have the ctor run, we need to perform a placement new here.
@@ -120,7 +119,7 @@ namespace sl::mem
         }
 
     private:
-        RawFunctions _mem;
+        raw_functions _mem;
     };
 
 }   // namespace sl::mem
