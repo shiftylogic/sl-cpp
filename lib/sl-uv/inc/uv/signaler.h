@@ -22,36 +22,44 @@
  * SOFTWARE.
  */
 
-#ifndef __ASYNC_H_F46C90D0CFFE4DBFA17CC30527617F62__
-#define __ASYNC_H_F46C90D0CFFE4DBFA17CC30527617F62__
+#ifndef __SIGNALER_H_3FDE59DDA15C44A8926FE46B3BE4F3C2__
+#define __SIGNALER_H_3FDE59DDA15C44A8926FE46B3BE4F3C2__
 
-#include <future>
-#include <tuple>
+#include <uv.h>
 
-namespace sl::test
+#include "./error.h"
+#include "./handle.h"
+#include "./loop.h"
+
+namespace sl::uv
 {
 
-    static bool run_async( std::chrono::milliseconds wait, std::function< void() > fn )
+    template< typename Logger, typename Callable >
+    class signaler : handle< uv_signal_t >
     {
-        auto task   = std::async( std::launch::async, fn );
-        auto status = task.wait_for( wait );
+    public:
+        explicit signaler( uv::loop< Logger >& loop, Callable fn, int signum )
+            : _fn( fn )
+        {
+            uv::error::throw_if( ::uv_signal_init( loop, *this ),
+                                 "uv_signal_init",
+                                 "error initializing signal handle" );
 
-        return status == std::future_status::ready;
-    }
+            uv::error::throw_if( ::uv_signal_start( *this, &signaler::on_signal, signum ),
+                                 "uv_signal_start",
+                                 "failed to start watching signal" );
+        }
 
-    template< typename T >
-    static std::tuple< bool, T > run_async( std::chrono::milliseconds wait,
-                                            std::function< T() > fn )
-    {
-        auto task   = std::async( std::launch::async, fn );
-        auto status = task.wait_for( wait );
+    private:
+        static void on_signal( uv_signal_t* h, int /* signum */ )
+        {
+            handle::self< signaler >( h )->_fn();
+        }
 
-        if ( status == std::future_status::ready )
-            return std::make_tuple( true, task.get() );
-        else
-            return std::make_tuple( false, T() );
-    }
+    private:
+        Callable _fn;
+    };
 
-}   // namespace sl::test
+}   // namespace sl::uv
 
-#endif /* __ASYNC_H_F46C90D0CFFE4DBFA17CC30527617F62__ */
+#endif /* __SIGNALER_H_3FDE59DDA15C44A8926FE46B3BE4F3C2__ */

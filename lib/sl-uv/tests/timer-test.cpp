@@ -22,36 +22,46 @@
  * SOFTWARE.
  */
 
-#ifndef __ASYNC_H_F46C90D0CFFE4DBFA17CC30527617F62__
-#define __ASYNC_H_F46C90D0CFFE4DBFA17CC30527617F62__
+#include <catch2/catch.hpp>
+#include <test/async.h>
 
-#include <future>
-#include <tuple>
+#include <logging/logger.h>
+#include <uv/timer.h>
 
-namespace sl::test
+using namespace std::chrono_literals;
+
+TEST_CASE( "UV timer executes", "[uv]" )
 {
+    auto [completed, count] = sl::test::run_async< int >( 2000ms, []() -> int {
+        std::atomic< int > count { 0 };
+        sl::logging::logger logger;
+        sl::uv::loop loop( logger );
+        sl::uv::timer timer( loop, 20, 0, [&]() { count++; } );
 
-    static bool run_async( std::chrono::milliseconds wait, std::function< void() > fn )
-    {
-        auto task   = std::async( std::launch::async, fn );
-        auto status = task.wait_for( wait );
+        loop.run( sl::uv::run_mode::once );
+        return count;
+    } );
 
-        return status == std::future_status::ready;
-    }
+    REQUIRE( completed );
+    REQUIRE( count == 1 );
+}
 
-    template< typename T >
-    static std::tuple< bool, T > run_async( std::chrono::milliseconds wait,
-                                            std::function< T() > fn )
-    {
-        auto task   = std::async( std::launch::async, fn );
-        auto status = task.wait_for( wait );
+TEST_CASE( "UV timer repeats", "[uv]" )
+{
+    auto [completed, count] = sl::test::run_async< int >( 2000ms, []() -> int {
+        std::atomic< int > count { 0 };
+        sl::logging::logger logger;
+        sl::uv::loop loop( logger );
+        sl::uv::timer timer( loop, 20, 20, [&]() { count++; } );
 
-        if ( status == std::future_status::ready )
-            return std::make_tuple( true, task.get() );
-        else
-            return std::make_tuple( false, T() );
-    }
+        loop.run( sl::uv::run_mode::once );
+        loop.run( sl::uv::run_mode::once );
+        loop.run( sl::uv::run_mode::once );
+        loop.run( sl::uv::run_mode::once );
 
-}   // namespace sl::test
+        return count;
+    } );
 
-#endif /* __ASYNC_H_F46C90D0CFFE4DBFA17CC30527617F62__ */
+    REQUIRE( completed );
+    REQUIRE( count == 4 );
+}

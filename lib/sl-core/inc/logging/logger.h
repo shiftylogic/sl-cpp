@@ -88,9 +88,9 @@ namespace sl::logging
         }
 
         template< typename... Args >
-        void Error( const char* format, Args... args )
+        void error( const char* format, Args... args )
         {
-            log( log_level::Error, format, std::forward< Args >( args )... );
+            log( log_level::error, format, std::forward< Args >( args )... );
         }
 
         template< typename... Args >

@@ -22,8 +22,38 @@
 
 cmake_minimum_required( VERSION 3.13 )
 
-project( sl-libs )
+project( sl-uv )
 
-add_subdirectory( sl-core )
-add_subdirectory( sl-uv )
+add_library( ${PROJECT_NAME} INTERFACE )
 
+target_include_directories( ${PROJECT_NAME} INTERFACE
+    ${CMAKE_CURRENT_SOURCE_DIR}/inc
+)
+
+target_link_libraries( ${PROJECT_NAME} INTERFACE
+    uv_a
+)
+
+# enable_warnings( ${PROJECT_NAME} )
+
+add_example(
+    NAME loop-demo
+    SOURCES examples/loop-demo.cpp
+    LIBRARIES sl-core ${PROJECT_NAME}
+)
+
+
+###################
+#
+# Build tests
+
+set( SLUV_LIB_TEST_SRCS
+    tests/idler-test.cpp
+    tests/timer-test.cpp
+)
+
+build_tests(
+    NAME uv-tests
+    SOURCES ${SLUV_LIB_TEST_SRCS}
+    LIBRARIES sl-core ${PROJECT_NAME}
+)

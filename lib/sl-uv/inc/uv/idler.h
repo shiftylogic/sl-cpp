@@ -22,36 +22,40 @@
  * SOFTWARE.
  */
 
-#ifndef __ASYNC_H_F46C90D0CFFE4DBFA17CC30527617F62__
-#define __ASYNC_H_F46C90D0CFFE4DBFA17CC30527617F62__
+#ifndef __IDLER_H_86F33456780F42A9BCC0889C3E285725__
+#define __IDLER_H_86F33456780F42A9BCC0889C3E285725__
 
-#include <future>
-#include <tuple>
+#include <uv.h>
 
-namespace sl::test
+#include "./error.h"
+#include "./handle.h"
+#include "./loop.h"
+
+namespace sl::uv
 {
 
-    static bool run_async( std::chrono::milliseconds wait, std::function< void() > fn )
+    template< typename Logger, typename Callable >
+    class idler : handle< uv_idle_t >
     {
-        auto task   = std::async( std::launch::async, fn );
-        auto status = task.wait_for( wait );
+    public:
+        explicit idler( uv::loop< Logger >& loop, Callable fn )
+            : _fn( fn )
+        {
+            uv::error::throw_if(
+                ::uv_idle_init( loop, *this ), "uv_idle_init", "failed to initialize idle handle" );
 
-        return status == std::future_status::ready;
-    }
+            uv::error::throw_if( ::uv_idle_start( *this, &idler::on_execute ),
+                                 "uv_idle_start",
+                                 "failed to start idle polling" );
+        }
 
-    template< typename T >
-    static std::tuple< bool, T > run_async( std::chrono::milliseconds wait,
-                                            std::function< T() > fn )
-    {
-        auto task   = std::async( std::launch::async, fn );
-        auto status = task.wait_for( wait );
+    private:
+        static void on_execute( uv_idle_t* h ) { handle::self< idler >( h )->_fn(); }
 
-        if ( status == std::future_status::ready )
-            return std::make_tuple( true, task.get() );
-        else
-            return std::make_tuple( false, T() );
-    }
+    private:
+        Callable _fn;
+    };
 
-}   // namespace sl::test
+}   // namespace sl::uv
 
-#endif /* __ASYNC_H_F46C90D0CFFE4DBFA17CC30527617F62__ */
+#endif /* __IDLER_H_86F33456780F42A9BCC0889C3E285725__ */
