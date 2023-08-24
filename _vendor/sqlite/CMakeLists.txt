@@ -70,3 +70,10 @@ add_executable( ${PROJECT_NAME}-cli
 target_link_libraries( ${PROJECT_NAME}-cli PRIVATE
     sqlite
 )
+
+
+#
+# Make sure the demo compiles
+#
+add_subdirectory( "demo" )
+
